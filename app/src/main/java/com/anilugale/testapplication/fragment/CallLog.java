@@ -30,10 +30,10 @@ import java.util.List;
 
 public class CallLog extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    private static final int CALL_LOG_LOADER_ID = 1;
+
     private static CallLog instance;
     public static String TAG="CallLog";
-
+    private static final int CALL_LOG_LOADER_ID = 1;
     RelativeLayout progress;
     RecyclerView call_list;
     public static CallLog newInstance()

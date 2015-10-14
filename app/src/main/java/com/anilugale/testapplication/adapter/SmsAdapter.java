@@ -15,7 +15,7 @@ import android.widget.Toast;
 
 import com.anilugale.testapplication.R;
 import com.anilugale.testapplication.model.Call;
-import com.anilugale.testapplication.model.Contact;
+import com.anilugale.testapplication.model.SMS;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -24,13 +24,13 @@ import java.util.List;
 /**
  Created by anil on 14/10/2015.
  */
-public class CallAdapter extends RecyclerView.Adapter<CallAdapter.ViewHolder> {
+public class SmsAdapter extends RecyclerView.Adapter<SmsAdapter.ViewHolder> {
 
     private int lastPosition = -1;
-    List<Call> dataContact;
+    List<SMS> dataContact;
     Context context;
 
-    public CallAdapter(List<Call> dataContact, Context context) {
+    public SmsAdapter(List<SMS> dataContact, Context context) {
         this.dataContact = dataContact;
         this.context = context;
     }
@@ -42,9 +42,9 @@ public class CallAdapter extends RecyclerView.Adapter<CallAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(ViewHolder holder, final int position) {
-        String date = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(new Date(Long.parseLong(dataContact.get(position).getDate())));
+    //    String date = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(new Date(Long.parseLong(dataContact.get(position).getDate())));
 
-        holder.date.setText(date);
+      /*  holder.date.setText(date);
         holder.number.setText(dataContact.get(position).getNumber());
         holder.duration.setText(dataContact.get(position).getDuration());
         holder.contact_holder.setOnClickListener(new View.OnClickListener() {
@@ -56,7 +56,7 @@ public class CallAdapter extends RecyclerView.Adapter<CallAdapter.ViewHolder> {
                     Toast.makeText(context, "Number Not Found", Toast.LENGTH_SHORT).show();
             }
         });
-        setAnimation( holder.contact_holder,position);
+        setAnimation( holder.contact_holder,position);*/
     }
 
     @Override
