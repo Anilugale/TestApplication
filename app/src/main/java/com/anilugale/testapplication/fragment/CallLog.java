@@ -10,6 +10,9 @@ import android.support.v4.content.Loader;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
@@ -41,6 +44,12 @@ public class CallLog extends Fragment implements LoaderManager.LoaderCallbacks<C
         return instance;
     }
 
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+        setHasOptionsMenu(true);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -62,9 +71,11 @@ public class CallLog extends Fragment implements LoaderManager.LoaderCallbacks<C
     }
 
     private void setCalls() {
-        call_list.setLayoutManager(new GridLayoutManager(getActivity(),1));
+        call_list.setLayoutManager(new GridLayoutManager(getActivity(), 1));
         CallAdapter adapter=new CallAdapter(callsData,getActivity());
         call_list.setAdapter(adapter);
+        progress.setVisibility(View.GONE);
+        call_list.setVisibility(View.VISIBLE);
     }
 
 
@@ -73,6 +84,8 @@ public class CallLog extends Fragment implements LoaderManager.LoaderCallbacks<C
         // This is called when a new Loader needs to be created.
 
         if (id == CALL_LOG_LOADER_ID) {
+            progress.setVisibility(View.VISIBLE);
+            call_list.setVisibility(View.GONE);
             return contactsLoader();
         }
         return null;
@@ -80,11 +93,8 @@ public class CallLog extends Fragment implements LoaderManager.LoaderCallbacks<C
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-
-
         callsData = instance.callFromCursor(cursor);
-
-
+        setCalls();
     }
 
     @Override
@@ -135,10 +145,30 @@ public class CallLog extends Fragment implements LoaderManager.LoaderCallbacks<C
                 call.setDuration(duration);
 
                 calls.add(call);
-            } while (cursor.moveToNext());
+            } while (cursor.moveToNext()&& calls.size()<=50);
 
 
         }
         return  calls;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.main, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.refresh:
+                getLoaderManager().initLoader(CALL_LOG_LOADER_ID,
+                        null,
+                        this);
+                return true;
+
+        }
+
+        return false;
     }
 }

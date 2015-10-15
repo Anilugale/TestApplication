@@ -11,6 +11,9 @@ import android.support.v4.content.Loader;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
@@ -31,6 +34,7 @@ public class Contact extends Fragment implements LoaderManager.LoaderCallbacks<C
     public static String TAG="Contact";
     RelativeLayout progress;
     RecyclerView contact_list;
+
     List<com.anilugale.testapplication.model.Contact> contacts;
     public static Contact newInstance()
     {
@@ -39,7 +43,12 @@ public class Contact extends Fragment implements LoaderManager.LoaderCallbacks<C
         return instance;
     }
 
-
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+        setHasOptionsMenu(true);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -151,10 +160,30 @@ public class Contact extends Fragment implements LoaderManager.LoaderCallbacks<C
                     phones.close();
                 }
                 contacts.add(contact);
-            } while (cursor.moveToNext());
+            } while (cursor.moveToNext()&& contacts.size()<=100);
         }
 
         return contacts;
     }
 
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.main, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.refresh:
+                getLoaderManager().initLoader(CONTACTS_LOADER_ID,
+                        null,
+                        this);
+                return true;
+
+        }
+
+        return false;
+    }
 }

@@ -10,6 +10,9 @@ import android.support.v4.content.Loader;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
@@ -41,7 +44,12 @@ public class SMSLog extends Fragment implements LoaderManager.LoaderCallbacks<Cu
         return instance;
     }
 
-
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+        setHasOptionsMenu(true);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -69,6 +77,8 @@ public class SMSLog extends Fragment implements LoaderManager.LoaderCallbacks<Cu
         // This is called when a new Loader needs to be created.
 
         if (id == SMS_LOADER_ID) {
+            progress.setVisibility(View.VISIBLE);
+            sms_list.setVisibility(View.GONE);
             return contactsLoader();
         }
         return null;
@@ -87,6 +97,8 @@ public class SMSLog extends Fragment implements LoaderManager.LoaderCallbacks<Cu
         sms_list.setLayoutManager(new GridLayoutManager(getActivity(),1));
         SmsAdapter adapter=new SmsAdapter(smsData,getActivity());
         sms_list.setAdapter(adapter);
+        progress.setVisibility(View.GONE);
+        sms_list.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -115,7 +127,7 @@ public class SMSLog extends Fragment implements LoaderManager.LoaderCallbacks<Cu
     }
 
     private List<SMS> smsFromCursor(Cursor cursor) {
-        List<SMS> calls = new ArrayList();
+        List<SMS> smses = new ArrayList();
 
         if (cursor.getCount() > 0) {
             cursor.moveToFirst();
@@ -126,11 +138,31 @@ public class SMSLog extends Fragment implements LoaderManager.LoaderCallbacks<Cu
                 String body = cursor.getString(cursor.getColumnIndex("body"));
                 sms.setAddress(address);
                 sms.setBody(body);
-                calls.add(sms);
-            } while (cursor.moveToNext());
+                smses.add(sms);
+            } while (cursor.moveToNext()&& smses.size()<=100);
 
 
         }
-        return  calls;
+        return  smses;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.main, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.refresh:
+                getLoaderManager().initLoader(SMS_LOADER_ID,
+                        null,
+                        this);
+                return true;
+
+        }
+
+        return false;
     }
 }
