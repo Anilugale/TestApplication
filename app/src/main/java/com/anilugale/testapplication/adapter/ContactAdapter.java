@@ -74,24 +74,18 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ViewHold
             contact_holder=(CardView) itemView.findViewById(R.id.contact_holder);
         }
 
-
     }
 
     void dialNumber(String number)
     {
-
-            Intent dial = new Intent();
-            dial.setAction("android.intent.action.DIAL");
-            dial.setData(Uri.parse("tel:" + number));
-            context.startActivity(dial);
-
-
-
+        Intent dial = new Intent();
+        dial.setAction("android.intent.action.DIAL");
+        dial.setData(Uri.parse("tel:" + number));
+        context.startActivity(dial);
     }
 
     private void setAnimation(View viewToAnimate, int position)
     {
-
         if (position > lastPosition)
         {
             Animation animation = AnimationUtils.loadAnimation(context, android.R.anim.slide_in_left);

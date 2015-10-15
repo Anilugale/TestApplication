@@ -3,14 +3,12 @@ package com.anilugale.testapplication.fragment;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,7 +16,6 @@ import android.widget.RelativeLayout;
 
 import com.anilugale.testapplication.R;
 import com.anilugale.testapplication.adapter.CallAdapter;
-import com.anilugale.testapplication.adapter.ContactAdapter;
 import com.anilugale.testapplication.model.Call;
 
 import java.util.ArrayList;
@@ -36,6 +33,7 @@ public class CallLog extends Fragment implements LoaderManager.LoaderCallbacks<C
     private static final int CALL_LOG_LOADER_ID = 1;
     RelativeLayout progress;
     RecyclerView call_list;
+    List<Call> callsData;
     public static CallLog newInstance()
     {
         if(instance==null)
@@ -44,11 +42,9 @@ public class CallLog extends Fragment implements LoaderManager.LoaderCallbacks<C
     }
 
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
-
         View root=inflater.inflate(R.layout.call_log,container,false);
         init(root);
         return root;
@@ -57,9 +53,18 @@ public class CallLog extends Fragment implements LoaderManager.LoaderCallbacks<C
     private void init(View root) {
         progress=(RelativeLayout) root.findViewById(R.id.progress);
         call_list=(RecyclerView) root.findViewById(R.id.call_list);
+        if(callsData==null)
         getLoaderManager().initLoader(CALL_LOG_LOADER_ID,
                 null,
                 this);
+        else
+            setCalls();
+    }
+
+    private void setCalls() {
+        call_list.setLayoutManager(new GridLayoutManager(getActivity(),1));
+        CallAdapter adapter=new CallAdapter(callsData,getActivity());
+        call_list.setAdapter(adapter);
     }
 
 
@@ -75,12 +80,10 @@ public class CallLog extends Fragment implements LoaderManager.LoaderCallbacks<C
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-        contactsFromCursor(cursor);
 
-        List<Call> contacts = contactsFromCursor(cursor);
-        call_list.setLayoutManager(new GridLayoutManager(getActivity(),1));
-        CallAdapter adapter=new CallAdapter(contacts,getActivity());
-        call_list.setAdapter(adapter);
+
+        callsData = instance.callFromCursor(cursor);
+
 
     }
 
@@ -112,7 +115,7 @@ public class CallLog extends Fragment implements LoaderManager.LoaderCallbacks<C
                 sortOrder);
     }
 
-    private List<Call> contactsFromCursor(Cursor cursor) {
+    private List<Call> callFromCursor(Cursor cursor) {
         List<Call> calls = new ArrayList();
 
         if (cursor.getCount() > 0) {

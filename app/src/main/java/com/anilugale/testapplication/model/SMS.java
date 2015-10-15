@@ -5,6 +5,10 @@ package com.anilugale.testapplication.model;
  */
 public class SMS {
 
+    private String address;
+    private String body;
+
+
     public String getAddress() {
         return address;
     }
@@ -21,16 +25,7 @@ public class SMS {
         this.body = body;
     }
 
-    public String getPerson() {
-        return person;
-    }
 
-    public void setPerson(String person) {
-        this.person = person;
-    }
 
-    private String address;
-   private String body;
-   private String person;
 
 }

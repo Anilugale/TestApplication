@@ -3,7 +3,6 @@ package com.anilugale.testapplication.fragment;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.Telephony;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -16,9 +15,7 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
 import com.anilugale.testapplication.R;
-import com.anilugale.testapplication.adapter.CallAdapter;
 import com.anilugale.testapplication.adapter.SmsAdapter;
-import com.anilugale.testapplication.model.Call;
 import com.anilugale.testapplication.model.SMS;
 
 import java.util.ArrayList;
@@ -35,6 +32,7 @@ public class SMSLog extends Fragment implements LoaderManager.LoaderCallbacks<Cu
     private static final int SMS_LOADER_ID = 1;
     RelativeLayout progress;
     RecyclerView sms_list;
+    List<SMS> smsData;
 
     public static SMSLog newInstance()
     {
@@ -57,10 +55,13 @@ public class SMSLog extends Fragment implements LoaderManager.LoaderCallbacks<Cu
 
     private void init(View root) {
         progress=(RelativeLayout) root.findViewById(R.id.progress);
-        sms_list=(RecyclerView) root.findViewById(R.id.call_list);
+        sms_list=(RecyclerView) root.findViewById(R.id.sms_list);
+        if(smsData==null)
         getLoaderManager().initLoader(SMS_LOADER_ID,
                 null,
                 this);
+        else
+            setSms();
     }
 
     @Override
@@ -75,13 +76,17 @@ public class SMSLog extends Fragment implements LoaderManager.LoaderCallbacks<Cu
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-        contactsFromCursor(cursor);
+        smsFromCursor(cursor);
 
-        List<SMS> contacts = contactsFromCursor(cursor);
+        smsData = smsFromCursor(cursor);
+       setSms();
+
+    }
+
+    private void setSms() {
         sms_list.setLayoutManager(new GridLayoutManager(getActivity(),1));
-        SmsAdapter adapter=new SmsAdapter(contacts,getActivity());
+        SmsAdapter adapter=new SmsAdapter(smsData,getActivity());
         sms_list.setAdapter(adapter);
-
     }
 
     @Override
@@ -93,7 +98,7 @@ public class SMSLog extends Fragment implements LoaderManager.LoaderCallbacks<Cu
         Uri contactsUri =Uri.parse("content://sms/inbox");;
 
         String[] projection = {
-                "address","body","person"
+                "address","body"
         } ;
 
         String selection = null;
@@ -109,7 +114,7 @@ public class SMSLog extends Fragment implements LoaderManager.LoaderCallbacks<Cu
                 sortOrder);
     }
 
-    private List<SMS> contactsFromCursor(Cursor cursor) {
+    private List<SMS> smsFromCursor(Cursor cursor) {
         List<SMS> calls = new ArrayList();
 
         if (cursor.getCount() > 0) {
@@ -117,16 +122,10 @@ public class SMSLog extends Fragment implements LoaderManager.LoaderCallbacks<Cu
 
             do {
                 SMS sms=new SMS();
-
                 String address = cursor.getString(cursor.getColumnIndex("address"));
                 String body = cursor.getString(cursor.getColumnIndex("body"));
-                String person = cursor.getString(cursor.getColumnIndex("person"));
-
-
                 sms.setAddress(address);
                 sms.setBody(body);
-                sms.setPerson(person);
-
                 calls.add(sms);
             } while (cursor.moveToNext());
 

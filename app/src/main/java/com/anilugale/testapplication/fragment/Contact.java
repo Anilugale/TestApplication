@@ -10,19 +10,14 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import android.widget.RelativeLayout;
-
 import com.anilugale.testapplication.R;
 import com.anilugale.testapplication.adapter.ContactAdapter;
-
 import java.util.ArrayList;
 import java.util.List;
-
 
 
 /**
@@ -36,7 +31,7 @@ public class Contact extends Fragment implements LoaderManager.LoaderCallbacks<C
     public static String TAG="Contact";
     RelativeLayout progress;
     RecyclerView contact_list;
-
+    List<com.anilugale.testapplication.model.Contact> contacts;
     public static Contact newInstance()
     {
         if(instance==null)
@@ -58,31 +53,54 @@ public class Contact extends Fragment implements LoaderManager.LoaderCallbacks<C
 
         progress=(RelativeLayout) root.findViewById(R.id.progress);
         contact_list=(RecyclerView) root.findViewById(R.id.contact_list);
-
-        getLoaderManager().initLoader(CONTACTS_LOADER_ID,
-                null,
-                this);
+        if(contacts==null)
+            getLoaderManager().initLoader(CONTACTS_LOADER_ID,
+                    null,
+                    this);
+        else
+            setContacts();
     }
 
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        // This is called when a new Loader needs to be created.
 
         if (id == CONTACTS_LOADER_ID) {
+
+            progress.setVisibility(View.VISIBLE);
+            contact_list.setVisibility(View.GONE);
             return contactsLoader();
         }
         return null;
     }
 
     @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+    public void onLoadFinished(Loader<Cursor> loader,final Cursor cursor) {
 
-        List<com.anilugale.testapplication.model.Contact> contacts = contactsFromCursor(cursor);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                contacts = contactsFromCursor(cursor);
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        setContacts();
+                    }
+                });
+            }
+        }).start();
+
+
+
+    }
+
+    private void setContacts() {
+
         contact_list.setLayoutManager(new GridLayoutManager(getActivity(),1));
         ContactAdapter adapter=new ContactAdapter(contacts,getActivity());
         contact_list.setAdapter(adapter);
-
+        progress.setVisibility(View.GONE);
+        contact_list.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -97,7 +115,6 @@ public class Contact extends Fragment implements LoaderManager.LoaderCallbacks<C
                 ContactsContract.Contacts.DISPLAY_NAME,
                 ContactsContract.Contacts._ID,
                 ContactsContract.Contacts.HAS_PHONE_NUMBER
-
         } ;
 
         String selection = null;
@@ -122,23 +139,15 @@ public class Contact extends Fragment implements LoaderManager.LoaderCallbacks<C
             do {
                 String name = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
                 String  id = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
-
                 com.anilugale.testapplication.model.Contact contact=new com.anilugale.testapplication.model.Contact();
-
                 contact.setName(name);
 
                 if (Integer.parseInt(cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER))) > 0)
                 {
-
                     Cursor phones = getActivity().getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = " + id, null, null);
                     phones.moveToFirst();
-                        String phoneNumber = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                    Log.i("Number", phoneNumber);
-
-
+                    String phoneNumber = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
                     contact.setMobile(phoneNumber);
-
-
                     phones.close();
                 }
                 contacts.add(contact);
